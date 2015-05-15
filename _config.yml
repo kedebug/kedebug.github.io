@@ -2,12 +2,12 @@
 #      Main Configs       #
 # ----------------------- #
 
-url: http://yoursite.com
-title: My Octopress Blog
-subtitle: A blogging framework for hackers.
-author: Your Name
+url: http://kedebug.github.io
+title: kedebug
+subtitle: 非专业搬砖技术研究
+author: kedebug
 simple_search: https://www.google.com/search
-description:
+description: My description
 
 # Default date format is "ordinal" (resulting in "July 22nd 2007")
 # You can customize the format as defined in
@@ -71,7 +71,7 @@ github_skip_forks: true
 
 # Twitter
 twitter_user:
-twitter_tweet_button: true
+twitter_tweet_button: false 
 
 # Google +1
 google_plus_one: false
@@ -91,8 +91,8 @@ delicious_user:
 delicious_count: 3
 
 # Disqus Comments
-disqus_short_name:
-disqus_show_comment_count: false
+disqus_short_name: kedebug
+disqus_show_comment_count: true
 
 # Google Analytics
 google_analytics_tracking_id:
