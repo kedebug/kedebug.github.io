@@ -4,7 +4,7 @@
   <title><![CDATA[kedebug]]></title>
   <link href="http://kedebug.github.io/atom.xml" rel="self"/>
   <link href="http://kedebug.github.io/"/>
-  <updated>2015-05-15T23:23:57+08:00</updated>
+  <updated>2015-05-16T15:06:37+08:00</updated>
   <id>http://kedebug.github.io/</id>
   <author>
     <name><![CDATA[kedebug]]></name>
@@ -14,7 +14,7 @@
 
   
   <entry>
-    <title type="html"><![CDATA[Yohub]]></title>
+    <title type="html"><![CDATA[YoHub - 基于事件驱动的异步网络编程框架]]></title>
     <link href="http://kedebug.github.io/blog/2015/05/15/yohub/"/>
     <updated>2015-05-15T20:35:59+08:00</updated>
     <id>http://kedebug.github.io/blog/2015/05/15/yohub</id>
