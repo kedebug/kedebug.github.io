@@ -2,45 +2,15 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[kedebug]]></title>
-  <link href="http://kedebug.github.io/atom.xml" rel="self"/>
-  <link href="http://kedebug.github.io/"/>
-  <updated>2015-05-16T15:06:37+08:00</updated>
-  <id>http://kedebug.github.io/</id>
+  <link href="http://kedebug.com/atom.xml" rel="self"/>
+  <link href="http://kedebug.com/"/>
+  <updated>2015-05-16T15:52:24+08:00</updated>
+  <id>http://kedebug.com/</id>
   <author>
     <name><![CDATA[kedebug]]></name>
     
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
-  
-  <entry>
-    <title type="html"><![CDATA[YoHub - 基于事件驱动的异步网络编程框架]]></title>
-    <link href="http://kedebug.github.io/blog/2015/05/15/yohub/"/>
-    <updated>2015-05-15T20:35:59+08:00</updated>
-    <id>http://kedebug.github.io/blog/2015/05/15/yohub</id>
-    <content type="html"><![CDATA[<p>YoHub是我个人开源的第三个项目，语言是 C++。主要灵感启发自 kylin (百度首席架构师林士鼎先生的 baidu in-house 作品，用于百度内部异步网络编程）。 流露出代码只是零零点点，只有 <a href="http://dirlt.com/kylin.html">dirlt</a> 的文章大概介绍了下。 但是基于事件驱动异步网络编程的思想，应该是当前高并发生产环境下解决问题的主要途径。引用林仕鼎先生的一句话：</p>
-
-<p>“最关键的是思维的转变，由同步思维换成异步思维。而当你习惯了异步思维后，其实慢慢也会发现单机系统和多机系统并没有太大差别，从而也将跨入分布式系统的阶段。”</p>
-
-<p>YoHub 正是引用了这样的一个异步思路，把那篇文章中的一些代码框架给串了起来。目前代码还在不断的完善中。网络编程的一些主要组件借鉴了 muduo 的 boost function/bind 回调的方式，极大了避免了虚函数的使用，使代码结构更加清晰，还有用智能指针管理长连接等等。代码是放在了 <a href="https://github.com/kedebug/yohub">GitHub</a> 上面，有兴趣的同学可以看看。</p>
-
-<!--more-->
-
-
-<p>个人感觉有几个值得一说的点：</p>
-
-<h3>网络线程和工作线程分离：</h3>
-
-<p>其实指的便是 Multiple Reactors + Worker Pool 工作方式，使得可以针对不同的业务场景，灵活调整网络线程和工作线程的个数，让程序更加灵活高效。</p>
-
-<h3>非阻塞到异步：</h3>
-
-<p>Linux 内核对异步的支持不是特别好，于是目前只能用工作线程来模拟这一异步的过程，这也就是上面所提到的异步思路。</p>
-
-<h3>智能指针：</h3>
-
-<p>网络编程中，一个非常值得注意的点是： TCP Connection 的生命周期管理。比较经典的一个场景是：当我们的任务放到工作线程中，但是还没来得及执行连接便断开。这时候应该怎么处理？ kylin 采用的是引用计数来解决这一问题，在设计之初，我也想过用计数的方法，但是这样 thread pool 就不具备通用性，要用虚函数，每个任务都要继承一个 ctx->Ref() 这样的方法，如果入线程池的只是简单的任务要怎么办？所以我这里利用智能指针，这点是很大程度上受到muduo网络库的影响。YoHub受益于此，在此也想提醒每个学 C++ 的同学，不妨了解下智能指针，大有裨益。</p>
-]]></content>
-  </entry>
   
 </feed>
