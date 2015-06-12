@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 技术分享 | kedebug]]></title>
   <link href="http://kedebug.com/blog/categories/ji-zhu-fen-xiang/atom.xml" rel="self"/>
   <link href="http://kedebug.com/"/>
-  <updated>2015-06-08T19:34:58+08:00</updated>
+  <updated>2015-06-12T18:06:10+08:00</updated>
   <id>http://kedebug.com/</id>
   <author>
     <name><![CDATA[kedebug]]></name>
@@ -29,7 +29,7 @@
 
 <p>个人感觉有几个值得一说的点：</p>
 
-<h3>网络线程和工作线程分离：</h3>
+<h2>网络线程和工作线程分离</h2>
 
 <p>其实指的便是 Multiple Reactors + Worker Pool 工作方式，使得可以针对不同的业务场景，灵活调整网络线程和工作线程的个数，让程序更加灵活高效。</p>
 
