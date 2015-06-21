@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: 源码阅读 | kedebug]]></title>
+  <link href="http://kedebug.com/blog/categories/yuan-ma-yue-du/atom.xml" rel="self"/>
+  <link href="http://kedebug.com/"/>
+  <updated>2015-06-21T19:19:00+08:00</updated>
+  <id>http://kedebug.com/</id>
+  <author>
+    <name><![CDATA[kedebug]]></name>
+    <email><![CDATA[kedebug0@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[源码阅读计划]]></title>
+    <link href="http://kedebug.com/blog/source-code-internal/"/>
+    <updated>2015-06-21T17:38:14+08:00</updated>
+    <id>http://kedebug.com/blog/source-code-internal</id>
+    <content type="html"><![CDATA[<p><strong>写博客，实则是对自己不断学习的一种鞭策。</strong></p>
+
+<!--more-->
+
+
+<p>入职一个多月，工作上的事情基本上接手完毕，接下来应该会逐步过渡到工作、学习之间的一种平衡状态。</p>
+
+<p>有一段时间没能坚持观看在 Youtube 上面订阅的 technical talks 了，感觉学习上略有松懈。之前选择在 Youtube
+上面看一些原汁原味的技术分享视频，主要是为了提高听力。现在看来，这个目的算是完成，可以无压力观看 Google I/O
+之类的视频。但学习目的也从「提高听力」转变到「追踪最新技术」，比如搜索 <code>golang google io</code>
+会出现近 4 年在 Google I/O 的 <code>Golang</code> 视频，包括 Rob Pike 等一系列 <code>Golang</code> 核心开发者的演示视频，
+可以直达语言精髓。不得不说，我自身便是这么学习 <code>Golang</code> 的，只花了三、四天时间，少走了很多弯路，
+甚至还写了个有意思的解释器项目 <a href="https://github.com/kedebug/LispEx">LispEx</a>。</p>
+
+<p>继续说到学习，在面试豌豆荚的时候，一个非常资深的架构师问我「接下来你还想做什么」？
+错愕之余，我说「想用 <code>XX</code> 技术造一个 <code>XX</code> 轮子」，甚至把这个项目的最初想法说了一遍。对方的一句话点醒了我
+「你应该把精力放在最重要的事情上，像这种已经非常成熟的技术，深入阅读相关源码可能会比 <code>reinvent the wheel</code> 效果好很多」。</p>
+
+<p>于是便有了本文的源码阅读计划。个人认为，要成为一名优秀的后端工程师，除了通晓业务以及相关的技术，
+更重要的是要有对网络、存储等基础领域不断精益求精的学习热情。学生生涯虽然阅读了不少像 <code>muduo, leveldb, cascadb, nessdb</code> 等，
+但只能算是管中窥豹。工作之后，希望能够结合线上实际业务去理解一些开源项目的美妙之处。</p>
+
+<p>下面几个项目算是经典中的经典，我会在接下来的时间里分享相关的源码阅读笔记，做到不断督促自己学习的目的。</p>
+
+<ul>
+<li>Nginx - A web server with a strong focus on high concurrency, performance and low memory usage.</li>
+<li>RocksDB - A library that provides an embeddable, persistent key-value store for fast storage.</li>
+<li>LMAX Disruptor - A high performance inter-thread messaging library.</li>
+<li>TCMalloc - Considered to be more than twice as fast as glibc&rsquo;s ptmalloc for multithreaded programs.</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+</feed>

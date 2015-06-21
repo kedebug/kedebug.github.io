@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 技术分享 | kedebug]]></title>
   <link href="http://kedebug.com/blog/categories/ji-zhu-fen-xiang/atom.xml" rel="self"/>
   <link href="http://kedebug.com/"/>
-  <updated>2015-06-21T10:56:08+08:00</updated>
+  <updated>2015-06-21T19:19:00+08:00</updated>
   <id>http://kedebug.com/</id>
   <author>
     <name><![CDATA[kedebug]]></name>
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[YoHub - 基于事件驱动的异步网络编程框架]]></title>
-    <link href="http://kedebug.com/blog/2015/05/15/yohub/"/>
+    <link href="http://kedebug.com/blog/yohub/"/>
     <updated>2015-05-15T20:35:59+08:00</updated>
-    <id>http://kedebug.com/blog/2015/05/15/yohub</id>
+    <id>http://kedebug.com/blog/yohub</id>
     <content type="html"><![CDATA[<p><code>YoHub</code> 是我个人开源的第三个项目，语言是 <code>C++</code>。主要灵感启发自 <code>kylin</code> (百度首席架构师林士鼎先生的 baidu in-house 作品，
 用于百度内部异步网络编程）。流露出代码只是零零点点，只有 <a href="http://dirlt.com/kylin.html">dirlt</a> 的文章大概介绍了下。
 但是基于事件驱动异步网络编程的思想，应该是当前高并发生产环境下解决问题的主要途径。</p>
