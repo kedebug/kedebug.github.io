@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 技术分享 | kedebug]]></title>
   <link href="http://kedebug.com/blog/categories/ji-zhu-fen-xiang/atom.xml" rel="self"/>
   <link href="http://kedebug.com/"/>
-  <updated>2015-07-07T13:27:03+08:00</updated>
+  <updated>2015-08-08T11:53:43+08:00</updated>
   <id>http://kedebug.com/</id>
   <author>
     <name><![CDATA[kedebug]]></name>
@@ -12,6 +12,136 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[LispEx - 让 Lisp 支持并发编程]]></title>
+    <link href="http://kedebug.com/blog/lisp-in-go/"/>
+    <updated>2015-08-08T10:57:26+08:00</updated>
+    <id>http://kedebug.com/blog/lisp-in-go</id>
+    <content type="html"><![CDATA[<p><code>LispEx</code> 是用 <code>Go</code> 语言编写的一款符合 R5RS 标准的 <code>Lisp</code> 解释器。有意思的地方是，
+在设计之初我就考虑是否能为其添加一些并发编程的语言特性，让这门古老的编程语言充满生机起来。</p>
+
+<!--more-->
+
+
+<p>于是便选择了 <code>Go</code> 语言来实现它，耗时近 2 个月。<code>Go</code> 里面的一些特性如：
+<code>goroutine, channel, select</code> 等语义都在 <code>LispEx</code> 中有了支持。</p>
+
+<ul>
+<li><p>遵守 KISS 原则，尽量把代码设计的简单，易懂。很多模块被很好的分离出来，想添加新的语义支持的话，只需要添加、修改个别文件的源代码。</p></li>
+<li><p>借鉴了王垠大神 <code>yin</code> 语言的代码设计思路：任何一个 Node 都会被解释成 Value；Parser 被拆分成了 2 个阶段：包括预处理生成语法单元，
+然后 Parse 成语法树。顺着这个思路，代码会变得非常易读，当然在设计的时候针对这点是费了很多心思的，希望对一些后人能有借鉴意义。</p></li>
+<li><p>并发的词法分析器。这点 Rob Pike 在 <a href="http://cuddle.googlecode.com/hg/talk/lex.html#title-slide">Lexical Scanning in Go</a> 提到过。
+<code>LispEx</code> 把它实践了一遍。相关视频也可以在 Youtube 上面搜索到，感兴趣的同学可以去看看，应该会有所启发。</p></li>
+<li><p>Go-liked 并发语义支持。下面一段代码演示了并发编程里面经典的 <code>ping-pong</code> 案例，并且借助 <code>channel</code> 实现了信号量：</p></li>
+</ul>
+
+
+<pre><code class="scheme">; define channels
+(define ping-chan (make-chan))
+(define pong-chan (make-chan))
+; define a buffered channel
+(define sem (make-chan 2))
+
+(define (ping n)
+  (if (&gt; n 0)
+    (begin
+      (display (&lt;-chan ping-chan))
+      (newline)
+      (chan&lt;- pong-chan 'pong)
+      (ping (- n 1)))
+    (chan&lt;- sem 'exit-ping)))
+
+(define (pong n)
+  (if (&gt; n 0)
+    (begin
+      (chan&lt;- ping-chan 'ping)
+      (display (&lt;-chan pong-chan))
+      (newline)
+      (pong (- n 1)))
+    (chan&lt;- sem 'exit-pong)))
+
+(go (ping 6))  ; start ping-routine
+(go (pong 6))  ; start pong-routine
+
+; implement semaphore with channel, waiting for ping-pong finishing
+(&lt;-chan sem) (newline)
+(&lt;-chan sem) (newline)
+
+; should close channels if you don't need it
+(close-chan sem)
+(close-chan pong-chan)
+(close-chan ping-chan)
+
+; the output will be: ping pong ping pong ... exit-ping exit-pong
+</code></pre>
+
+<p>怎么样？到这里会不会觉得 <code>LispEx</code> 还有点意思？下面看看 <code>select</code> 语义在 <code>LispEx</code> 中是如何实现的：</p>
+
+<pre><code class="scheme">(define chan-1 (make-chan))
+(define chan-2 (make-chan))
+
+(go (chan&lt;- chan-1 'hello-chan-1))
+(go (chan&lt;- chan-2 'hello-chan-2))
+
+; sleep for 20 millisecond
+(sleep 20)
+
+(select
+  ((&lt;-chan chan-1))
+  ((&lt;-chan chan-2))
+  (default 'hello-default))
+
+(close-chan chan-1)
+(close-chan chan-2)
+
+; the output will be randomized: hello-chan-1 or hello-chan-2
+</code></pre>
+
+<p>到这里的代码是不是和 <code>go</code> 语言似曾相识？没错，上述代码都是可以通过 <code>LispEx</code> 直接解释执行的。
+实际上，整个工程很大的精力是在基于 R5RS 文档标准在构建 <code>Lisp</code> 的基本语义框架，如闭包、柯里化、解引用等，
+而 <code>go, channel, select</code> 等语义在这个框架上的实现是非常轻松自然的。</p>
+
+<p>为什么这么说，下面来看看 <code>go</code> 关键字的语义在 <code>LispEx</code> 代码中是如何实现的：</p>
+
+<pre><code class="go">type Go struct {
+  Expr Node
+}
+
+func NewGo(expr Node) *Go {
+  return &amp;Go{Expr: expr}
+}
+
+func (self *Go) Eval(env *scope.Scope) Value {
+  // We need to recover the panic message of goroutine
+  go func() {
+    defer func() {
+      if err := recover(); err != nil {
+        fmt.Println(err)
+      }
+    }()
+    self.Expr.Eval(scope.NewScope(env))
+  }()
+  return nil
+}
+
+func (self *Go) String() string {
+  return fmt.Sprintf("(go %s)", self.Expr)
+}
+</code></pre>
+
+<p>个人认为 <code>LispEx</code> 在设计上还算是扩展性良好，再加上 <code>golang</code> 中的 <code>interface</code> 神器，
+基于<strong>连接/组合</strong>的编程范式可以让代码流程变得异常清晰，这也是我喜欢 <code>golang</code> 的一个原因。</p>
+
+<p>最后附上 当初在 V2EX 上的讨论帖以及 GitHub 地址，have fun！</p>
+
+<ul>
+<li><a href="http://v2ex.com/t/124125">http://v2ex.com/t/124125</a></li>
+<li><a href="https://github.com/kedebug/LispEx">https://github.com/kedebug/LispEx</a></li>
+</ul>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[YoHub - 基于事件驱动的异步网络编程框架]]></title>

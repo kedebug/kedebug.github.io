@@ -4,7 +4,7 @@
   <title><![CDATA[kedebug]]></title>
   <link href="http://kedebug.com/atom.xml" rel="self"/>
   <link href="http://kedebug.com/"/>
-  <updated>2015-07-07T13:27:03+08:00</updated>
+  <updated>2015-08-08T11:53:43+08:00</updated>
   <id>http://kedebug.com/</id>
   <author>
     <name><![CDATA[kedebug]]></name>
@@ -12,6 +12,218 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[LispEx - 让 Lisp 支持并发编程]]></title>
+    <link href="http://kedebug.com/blog/lisp-in-go/"/>
+    <updated>2015-08-08T10:57:26+08:00</updated>
+    <id>http://kedebug.com/blog/lisp-in-go</id>
+    <content type="html"><![CDATA[<p><code>LispEx</code> 是用 <code>Go</code> 语言编写的一款符合 R5RS 标准的 <code>Lisp</code> 解释器。有意思的地方是，
+在设计之初我就考虑是否能为其添加一些并发编程的语言特性，让这门古老的编程语言充满生机起来。</p>
+
+<!--more-->
+
+
+<p>于是便选择了 <code>Go</code> 语言来实现它，耗时近 2 个月。<code>Go</code> 里面的一些特性如：
+<code>goroutine, channel, select</code> 等语义都在 <code>LispEx</code> 中有了支持。</p>
+
+<ul>
+<li><p>遵守 KISS 原则，尽量把代码设计的简单，易懂。很多模块被很好的分离出来，想添加新的语义支持的话，只需要添加、修改个别文件的源代码。</p></li>
+<li><p>借鉴了王垠大神 <code>yin</code> 语言的代码设计思路：任何一个 Node 都会被解释成 Value；Parser 被拆分成了 2 个阶段：包括预处理生成语法单元，
+然后 Parse 成语法树。顺着这个思路，代码会变得非常易读，当然在设计的时候针对这点是费了很多心思的，希望对一些后人能有借鉴意义。</p></li>
+<li><p>并发的词法分析器。这点 Rob Pike 在 <a href="http://cuddle.googlecode.com/hg/talk/lex.html#title-slide">Lexical Scanning in Go</a> 提到过。
+<code>LispEx</code> 把它实践了一遍。相关视频也可以在 Youtube 上面搜索到，感兴趣的同学可以去看看，应该会有所启发。</p></li>
+<li><p>Go-liked 并发语义支持。下面一段代码演示了并发编程里面经典的 <code>ping-pong</code> 案例，并且借助 <code>channel</code> 实现了信号量：</p></li>
+</ul>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+</pre></td><td class='code'><pre><code class='scheme'><span class='line'><span class="c1">; define channels</span>
+</span><span class='line'><span class="p">(</span><span class="k">define </span><span class="nv">ping-chan</span> <span class="p">(</span><span class="nf">make-chan</span><span class="p">))</span>
+</span><span class='line'><span class="p">(</span><span class="k">define </span><span class="nv">pong-chan</span> <span class="p">(</span><span class="nf">make-chan</span><span class="p">))</span>
+</span><span class='line'><span class="c1">; define a buffered channel</span>
+</span><span class='line'><span class="p">(</span><span class="k">define </span><span class="nv">sem</span> <span class="p">(</span><span class="nf">make-chan</span> <span class="mi">2</span><span class="p">))</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">ping</span> <span class="nv">n</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nb">&gt; </span><span class="nv">n</span> <span class="mi">0</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">(</span><span class="nf">begin</span>
+</span><span class='line'>      <span class="p">(</span><span class="nb">display </span><span class="p">(</span><span class="nf">&lt;-chan</span> <span class="nv">ping-chan</span><span class="p">))</span>
+</span><span class='line'>      <span class="p">(</span><span class="nf">newline</span><span class="p">)</span>
+</span><span class='line'>      <span class="p">(</span><span class="nf">chan&lt;-</span> <span class="nv">pong-chan</span> <span class="ss">&#39;pong</span><span class="p">)</span>
+</span><span class='line'>      <span class="p">(</span><span class="nf">ping</span> <span class="p">(</span><span class="nb">- </span><span class="nv">n</span> <span class="mi">1</span><span class="p">)))</span>
+</span><span class='line'>    <span class="p">(</span><span class="nf">chan&lt;-</span> <span class="nv">sem</span> <span class="ss">&#39;exit-ping</span><span class="p">)))</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">pong</span> <span class="nv">n</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nb">&gt; </span><span class="nv">n</span> <span class="mi">0</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">(</span><span class="nf">begin</span>
+</span><span class='line'>      <span class="p">(</span><span class="nf">chan&lt;-</span> <span class="nv">ping-chan</span> <span class="ss">&#39;ping</span><span class="p">)</span>
+</span><span class='line'>      <span class="p">(</span><span class="nb">display </span><span class="p">(</span><span class="nf">&lt;-chan</span> <span class="nv">pong-chan</span><span class="p">))</span>
+</span><span class='line'>      <span class="p">(</span><span class="nf">newline</span><span class="p">)</span>
+</span><span class='line'>      <span class="p">(</span><span class="nf">pong</span> <span class="p">(</span><span class="nb">- </span><span class="nv">n</span> <span class="mi">1</span><span class="p">)))</span>
+</span><span class='line'>    <span class="p">(</span><span class="nf">chan&lt;-</span> <span class="nv">sem</span> <span class="ss">&#39;exit-pong</span><span class="p">)))</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">(</span><span class="nf">go</span> <span class="p">(</span><span class="nf">ping</span> <span class="mi">6</span><span class="p">))</span>  <span class="c1">; start ping-routine</span>
+</span><span class='line'><span class="p">(</span><span class="nf">go</span> <span class="p">(</span><span class="nf">pong</span> <span class="mi">6</span><span class="p">))</span>  <span class="c1">; start pong-routine</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">; implement semaphore with channel, waiting for ping-pong finishing</span>
+</span><span class='line'><span class="p">(</span><span class="nf">&lt;-chan</span> <span class="nv">sem</span><span class="p">)</span> <span class="p">(</span><span class="nf">newline</span><span class="p">)</span>
+</span><span class='line'><span class="p">(</span><span class="nf">&lt;-chan</span> <span class="nv">sem</span><span class="p">)</span> <span class="p">(</span><span class="nf">newline</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">; should close channels if you don&#39;t need it</span>
+</span><span class='line'><span class="p">(</span><span class="nf">close-chan</span> <span class="nv">sem</span><span class="p">)</span>
+</span><span class='line'><span class="p">(</span><span class="nf">close-chan</span> <span class="nv">pong-chan</span><span class="p">)</span>
+</span><span class='line'><span class="p">(</span><span class="nf">close-chan</span> <span class="nv">ping-chan</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">; the output will be: ping pong ping pong ... exit-ping exit-pong</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>怎么样？到这里会不会觉得 <code>LispEx</code> 还有点意思？下面看看 <code>select</code> 语义在 <code>LispEx</code> 中是如何实现的：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='scheme'><span class='line'><span class="p">(</span><span class="k">define </span><span class="nv">chan-1</span> <span class="p">(</span><span class="nf">make-chan</span><span class="p">))</span>
+</span><span class='line'><span class="p">(</span><span class="k">define </span><span class="nv">chan-2</span> <span class="p">(</span><span class="nf">make-chan</span><span class="p">))</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">(</span><span class="nf">go</span> <span class="p">(</span><span class="nf">chan&lt;-</span> <span class="nv">chan-1</span> <span class="ss">&#39;hello-chan-1</span><span class="p">))</span>
+</span><span class='line'><span class="p">(</span><span class="nf">go</span> <span class="p">(</span><span class="nf">chan&lt;-</span> <span class="nv">chan-2</span> <span class="ss">&#39;hello-chan-2</span><span class="p">))</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">; sleep for 20 millisecond</span>
+</span><span class='line'><span class="p">(</span><span class="nf">sleep</span> <span class="mi">20</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">(</span><span class="nf">select</span>
+</span><span class='line'>  <span class="p">((</span><span class="nf">&lt;-chan</span> <span class="nv">chan-1</span><span class="p">))</span>
+</span><span class='line'>  <span class="p">((</span><span class="nf">&lt;-chan</span> <span class="nv">chan-2</span><span class="p">))</span>
+</span><span class='line'>  <span class="p">(</span><span class="nf">default</span> <span class="ss">&#39;hello-default</span><span class="p">))</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">(</span><span class="nf">close-chan</span> <span class="nv">chan-1</span><span class="p">)</span>
+</span><span class='line'><span class="p">(</span><span class="nf">close-chan</span> <span class="nv">chan-2</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">; the output will be randomized: hello-chan-1 or hello-chan-2</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>到这里的代码是不是和 <code>go</code> 语言似曾相识？没错，上述代码都是可以通过 <code>LispEx</code> 直接解释执行的。
+实际上，整个工程很大的精力是在基于 R5RS 文档标准在构建 <code>Lisp</code> 的基本语义框架，如闭包、柯里化、解引用等，
+而 <code>go, channel, select</code> 等语义在这个框架上的实现是非常轻松自然的。</p>
+
+<p>为什么这么说，下面来看看 <code>go</code> 关键字的语义在 <code>LispEx</code> 代码中是如何实现的：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+</pre></td><td class='code'><pre><code class='go'><span class='line'><span class="kd">type</span> <span class="nx">Go</span> <span class="kd">struct</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nx">Expr</span> <span class="nx">Node</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">func</span> <span class="nx">NewGo</span><span class="p">(</span><span class="nx">expr</span> <span class="nx">Node</span><span class="p">)</span> <span class="o">*</span><span class="nx">Go</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">return</span> <span class="o">&amp;</span><span class="nx">Go</span><span class="p">{</span><span class="nx">Expr</span><span class="p">:</span> <span class="nx">expr</span><span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">func</span> <span class="p">(</span><span class="nx">self</span> <span class="o">*</span><span class="nx">Go</span><span class="p">)</span> <span class="nx">Eval</span><span class="p">(</span><span class="nx">env</span> <span class="o">*</span><span class="nx">scope</span><span class="p">.</span><span class="nx">Scope</span><span class="p">)</span> <span class="nx">Value</span> <span class="p">{</span>
+</span><span class='line'>  <span class="c1">// We need to recover the panic message of goroutine</span>
+</span><span class='line'>  <span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>      <span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nb">recover</span><span class="p">();</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span><span class='line'>        <span class="nx">fmt</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+</span><span class='line'>      <span class="p">}</span>
+</span><span class='line'>    <span class="p">}()</span>
+</span><span class='line'>    <span class="nx">self</span><span class="p">.</span><span class="nx">Expr</span><span class="p">.</span><span class="nx">Eval</span><span class="p">(</span><span class="nx">scope</span><span class="p">.</span><span class="nx">NewScope</span><span class="p">(</span><span class="nx">env</span><span class="p">))</span>
+</span><span class='line'>  <span class="p">}()</span>
+</span><span class='line'>  <span class="k">return</span> <span class="kc">nil</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">func</span> <span class="p">(</span><span class="nx">self</span> <span class="o">*</span><span class="nx">Go</span><span class="p">)</span> <span class="nx">String</span><span class="p">()</span> <span class="kt">string</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">return</span> <span class="nx">fmt</span><span class="p">.</span><span class="nx">Sprintf</span><span class="p">(</span><span class="s">&quot;(go %s)&quot;</span><span class="p">,</span> <span class="nx">self</span><span class="p">.</span><span class="nx">Expr</span><span class="p">)</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>个人认为 <code>LispEx</code> 在设计上还算是扩展性良好，再加上 <code>golang</code> 中的 <code>interface</code> 神器，
+基于<strong>连接/组合</strong>的编程范式可以让代码流程变得异常清晰，这也是我喜欢 <code>golang</code> 的一个原因。</p>
+
+<p>最后附上 当初在 V2EX 上的讨论帖以及 GitHub 地址，have fun！</p>
+
+<ul>
+<li><a href="http://v2ex.com/t/124125">http://v2ex.com/t/124125</a></li>
+<li><a href="https://github.com/kedebug/LispEx">https://github.com/kedebug/LispEx</a></li>
+</ul>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[怎么进入 BAT 的研发部门？]]></title>
